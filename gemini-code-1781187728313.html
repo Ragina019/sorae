@@ -1,0 +1,77 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorae Comics Hub</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Sorae Comic Team</h1>
+        <p>Welcome to our official central hub!</p>
+    </header>
+
+    <h2>⭐ Your Favorites</h2>
+    <div id="favorites-grid" class="comic-grid"></div>
+
+    <h2>📖 History (Recently Read)</h2>
+    <div id="history-list" style="background:#1e1e1e; padding:15px; border-radius:8px;"></div>
+
+    <h2>📚 All Comics</h2>
+    <div id="main-grid" class="comic-grid"></div>
+
+    <script src="comics.js"></script>
+    <script>
+        // Load All Comics
+        const mainGrid = document.getElementById('main-grid');
+        comicDatabase.forEach(comic => {
+            mainGrid.innerHTML += `
+                <div class="comic-card">
+                    <img src="${comic.cover}" alt="${comic.title}">
+                    <h3>${comic.title}</h3>
+                    <p>By ${comic.author}</p>
+                    <a href="reader.html?id=${comic.id}" class="btn">Read Now</a>
+                    <button class="btn fav-btn" onclick="toggleFavorite('${comic.id}')">❤ Fav</button>
+                </div>
+            `;
+        });
+
+        // Load Favorites & History
+        function loadUserActivity() {
+            const favs = JSON.parse(localStorage.getItem('sorae_favs')) || [];
+            const history = JSON.parse(localStorage.getItem('sorae_history')) || [];
+            
+            // Render Favorites
+            const favGrid = document.getElementById('favorites-grid');
+            favGrid.innerHTML = favs.length === 0 ? "<p>No favorites saved yet.</p>" : "";
+            comicDatabase.filter(c => favs.includes(c.id)).forEach(comic => {
+                favGrid.innerHTML += `<div class="comic-card"><img src="${comic.cover}"><h3>${comic.title}</h3><a href="reader.html?id=${comic.id}" class="btn">Read</a></div>`;
+            });
+
+            // Render History
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = history.length === 0 ? "<p>No history yet.</p>" : "";
+            history.forEach(id => {
+                const comic = comicDatabase.find(c => c.id === id);
+                if(comic) historyList.innerHTML += `<p>• You recently read <a href="reader.html?id=${comic.id}" style="color:#ff4757;">${comic.title}</a></p>`;
+            });
+        }
+
+        function toggleFavorite(id) {
+            let favs = JSON.parse(localStorage.getItem('sorae_favs')) || [];
+            if(favs.includes(id)) {
+                favs = favs.filter(f => f !== id);
+            } else {
+                favs.push(id);
+            }
+            localStorage.setItem('sorae_favs', JSON.stringify(favs));
+            loadUserActivity();
+        }
+
+        window.onload = loadUserActivity;
+    </script>
+</body>
+</html>

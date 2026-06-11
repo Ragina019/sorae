@@ -1,0 +1,91 @@
+<!-- reader.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorae Reader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="reader-container">
+        <a href="index.html" class="btn" style="background:#333; margin-bottom: 20px;">← Back to Hub</a>
+        <h1 id="comic-title">Loading...</h1>
+        <h3 id="comic-author"></h3>
+
+        <!-- Comic Pages Show Up Here -->
+        <div id="pages-container"></div>
+
+        <!-- Rating System -->
+        <div class="rating-sec">
+            <span>Rate this Comic: </span>
+            <span class="star" onclick="rate(1)">★</span>
+            <span class="star" onclick="rate(2)">★</span>
+            <span class="star" onclick="rate(3)">★</span>
+            <span class="star" onclick="rate(4)">★</span>
+            <span class="star" onclick="rate(5)">★</span>
+        </div>
+
+        <hr style="border: 1px solid #333; margin: 40px 0;">
+
+        <!-- Comment Section Powered by Disqus -->
+        <h2>💬 Comments</h2>
+        <div id="disqus_thread"></div>
+    </div>
+
+    <script src="comics.js"></script>
+    <script>
+        // Get Comic ID from the link URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const comicId = urlParams.get('id');
+        const comic = comicDatabase.find(c => c.id === comicId);
+
+        if (comic) {
+            document.title = comic.title;
+            document.getElementById('comic-title').innerText = comic.title;
+            document.getElementById('comic-author').innerText = "By " + comic.author;
+
+            // Load Pages
+            const container = document.getElementById('pages-container');
+            comic.pages.forEach(pageUrl => {
+                container.innerHTML += `<img src="${pageUrl}" class="comic-page" alt="Comic Page">`;
+            });
+
+            // Save to Reading History
+            let history = JSON.parse(localStorage.getItem('sorae_history')) || [];
+            if (!history.includes(comicId)) {
+                history.unshift(comicId); // Add to beginning of list
+                if(history.length > 5) history.pop(); // Keep only last 5 read
+                localStorage.setItem('sorae_history', JSON.stringify(history));
+            }
+        } else {
+            document.getElementById('comic-title').innerText = "Comic not found!";
+        }
+
+        // Simple Rating Function
+        function rate(stars) {
+            const starElements = document.querySelectorAll('.star');
+            starElements.forEach((s, idx) => {
+                if(idx < stars) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+            localStorage.setItem('rating_' + comicId, stars);
+            alert("Thanks for rating it " + stars + " stars!");
+        }
+
+        // DISQUS FREE COMMENTS CONFIGURATION
+        var disqus_config = function () {
+            this.page.url = window.location.href;  
+            this.page.identifier = comicId; 
+        };
+        (function() { 
+            var d = document, s = d.createElement('script');
+            // IMPORTANT: Replace 'sorae-comics' below with your actual free Disqus shortname once you sign up on disqus.com
+            s.src = 'https://sorae-comics.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+</body>
+</html>

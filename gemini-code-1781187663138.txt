@@ -1,0 +1,5 @@
+sorae-website/
+├── index.html          (The Homepage)
+├── reader.html         (The Comic Viewer page)
+├── style.css           (The Design/Styling)
+└── comics.js           (The Database of your comics and 70 creators)
